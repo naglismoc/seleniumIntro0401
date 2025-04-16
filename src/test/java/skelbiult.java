@@ -4,11 +4,60 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 public class skelbiult {
-
+    public void acceptCookies(WebDriver driver){
+        driver.get("https://skelbiu.lt");
+        WebElement acceptBtn = driver.findElement(By.id("onetrust-accept-btn-handler"));
+        acceptBtn.click();
+    }
     @Test
+    public void dataGatherer(){
+        WebDriver driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
+        acceptCookies(driver);
+
+        String searchKeyword = "verpimo ratelis";
+        String baseUrl = "https://www.skelbiu.lt/skelbimai/";
+        List<String> urls = new ArrayList<>();
+        for (int i = 1; i <= 200; i++) {
+            String url = baseUrl + i + "?keywords=" + searchKeyword.replace(" ","%20");
+            driver.get(url);
+            String currentUrl = driver.getCurrentUrl();
+            if(!url.equals(currentUrl)){
+                break;
+            }
+         urls.addAll(getUrls(driver));
+        }
+        System.out.println(urls.size());
+        getUserData(driver, urls);
+    }
+
+    private void getUserData(WebDriver driver, List<String> urls) {
+        for (String url : urls) {
+            driver.get(url);
+            try {
+            System.out.println(driver.findElement(By.cssSelector(".profile-data > .name")).getText());
+            }catch (Exception e){}
+        }
+    }
+
+    private List<String> getUrls(WebDriver driver) {
+        List<WebElement> urlsElements = driver.findElements(By.cssSelector(".standard-list-container > div > a"));
+        List<String> urls = new ArrayList<>();
+        for (WebElement urlElem:urlsElements   ) {
+            String url = "https://www.skelbiu.lt" + urlElem.getDomAttribute("href");
+            urls.add(url);
+        }
+        return urls;
+    }
+
+
+    //    @Test
     public void openWebsite() throws InterruptedException {
         WebDriver driver = new ChromeDriver();
         driver.manage().window().maximize();
